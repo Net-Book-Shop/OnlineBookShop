@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using OnlineBookShop.Data;
 using OnlineBookShop.Dto;
+using OnlineBookShop.Repository;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -10,12 +11,12 @@ namespace OnlineBookShop.Security
 {
     public class JwtService
     {
-        private readonly ApplicationDBContext _dbContext;
+        private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        public JwtService(ApplicationDBContext dBContext,IConfiguration configuration) { 
+        public JwtService(IConfiguration configuration,UserRepository userRepository) { 
         
-            _dbContext = dBContext;
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
         public async Task<LoginResponseDTO?> Authenticate(LoginRegisterDTO request)
@@ -23,7 +24,7 @@ namespace OnlineBookShop.Security
             if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
                 return null;
 
-            var userAccount = await _dbContext.users.FirstOrDefaultAsync(x => x.UserName == request.UserName);
+            var userAccount = await _userRepository.FindByUserName(request.UserName);
 
             if (userAccount is null) return null;
 
@@ -34,11 +35,10 @@ namespace OnlineBookShop.Security
             var tokenValidityMins = _configuration.GetValue<int>("JwtConfig:TokenValidityMins");
 
 
-            // Log the configuration values to ensure they are loaded
-            Console.WriteLine($"Issuer: {issuer}");
-            Console.WriteLine($"Audience: {audience}");
-            Console.WriteLine($"Key: {key}");
-            Console.WriteLine($"Token Validity: {tokenValidityMins} minutes");
+            //Console.WriteLine($"Issuer: {issuer}");
+            //Console.WriteLine($"Audience: {audience}");
+            //Console.WriteLine($"Key: {key}");
+            //Console.WriteLine($"Token Validity: {tokenValidityMins} minutes");
 
             // Validate that the key is not null or empty
             if (string.IsNullOrWhiteSpace(key))

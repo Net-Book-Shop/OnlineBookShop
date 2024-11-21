@@ -1,10 +1,12 @@
-﻿using OnlineBookShop.Dto;
+﻿using Microsoft.AspNetCore.Mvc;
+using OnlineBookShop.Dto;
 using OnlineBookShop.Model;
 
 namespace OnlineBookShop.Service
 {
     public interface IUserService
     {
-        Task RegistorUser(UserRegistorRequestDTO userRegistor);
+        Task<ResponseMessage> GetRoleWiseUserlist(UserRegistorRequestDTO requestDTO);
+        Task<ResponseMessage> UserRegistor(UserRegistorRequestDTO userRegistor);
     }
 }

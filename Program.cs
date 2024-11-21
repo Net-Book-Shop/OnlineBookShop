@@ -5,7 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineBookShop.Data;
 using OnlineBookShop.Security;
+using OnlineBookShop.Service.Impl;
+using OnlineBookShop.Service;
 using System.Text;
+using OnlineBookShop.Repository;
+using Microsoft.AspNetCore.Identity;
+using OnlineBookShop.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,8 +74,8 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
@@ -79,9 +84,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
+
+//service add
+builder.Services.AddScoped<PasswordHasher<User>>();
 builder.Services.AddAuthentication();
-
-
+builder.Services.AddScoped<IUserService, UserService>();
+//repository
+builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 
