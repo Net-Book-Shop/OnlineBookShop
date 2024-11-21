@@ -1,0 +1,81 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+*.tlg
+logs/
+
+# ASP.NET Scaffolding
+.scaffolding/
+
+# Configuration files
+appsettings*.json
+*.config
+
+# Rider and IntelliJ project files
+.idea/
+*.sln.iml
+
+# Visual Studio Code files
+.vscode/
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.pid
+*.dump
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio specific
+.vs/
+.vscode/
+*.vspscc
+*.vssscc
+_Resharper*/
+*.resharper
+*.vsix
+*.nupkg
+*.snk
+
+# Database files
+*.mdf
+*.ldf
+
+# Testing
+*.coverage
+*.coveragexml
+*.testsettings
+*.vsmdi
+TestResults/
+*.trx
+
+# DotNet local artifacts
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Npm and Yarn files
+node_modules/
+yarn.lock
+
+# Logs
+*.log
