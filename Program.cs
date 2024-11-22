@@ -15,9 +15,19 @@ using OnlineBookShop.Model;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddCors(options =>
+{
+    // Add CORS configuration
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") 
+              .AllowAnyHeader()                   
+              .AllowAnyMethod()                    
+              .AllowCredentials();              
+    });
+});
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -54,10 +64,6 @@ builder.Services.
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-// Add Identity services
-//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-//    .AddEntityFrameworkStores<ApplicationDBContext>()
-//    .AddDefaultTokenProviders();
 
 
 
@@ -90,8 +96,17 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<PasswordHasher<User>>();
 builder.Services.AddAuthentication();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPrivilageService, PrivilageService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBookService, BookService>();
 //repository
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<PrivilegeRepository>();
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<PrivilegeDetailsRepository>();
+
 
 var app = builder.Build();
 
@@ -103,6 +118,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware
+app.UseCors("AllowAngularApp");
 app.UseAuthentication(); 
 app.UseAuthorization();
 

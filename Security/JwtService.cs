@@ -13,18 +13,25 @@ namespace OnlineBookShop.Security
     {
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        public JwtService(IConfiguration configuration,UserRepository userRepository) { 
-        
-            _configuration = configuration;
+        private readonly RoleRepository _roleRepository;
+        private readonly PrivilegeDetailsRepository _privilegeDetailsRepository;
+        private readonly PrivilegeRepository _privilegeRepository;
+
+        public JwtService(UserRepository userRepository, IConfiguration configuration, RoleRepository roleRepository, PrivilegeDetailsRepository privilegeDetailsRepository, PrivilegeRepository privilegeRepository)
+        {
             _userRepository = userRepository;
+            _configuration = configuration;
+            _roleRepository = roleRepository;
+            _privilegeDetailsRepository = privilegeDetailsRepository;
+            _privilegeRepository = privilegeRepository;
         }
 
         public async Task<LoginResponseDTO?> Authenticate(LoginRegisterDTO request)
         {
-            if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
+            if (string.IsNullOrWhiteSpace(request.username) || string.IsNullOrWhiteSpace(request.password))
                 return null;
 
-            var userAccount = await _userRepository.FindByUserName(request.UserName);
+            var userAccount = await _userRepository.FindByUserName(request.username);
 
             if (userAccount is null) return null;
 
@@ -50,7 +57,7 @@ namespace OnlineBookShop.Security
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[] { new Claim(JwtRegisteredClaimNames.Name, request.UserName) }),
+                Subject = new ClaimsIdentity(new[] { new Claim(JwtRegisteredClaimNames.Name, request.username) }),
                 Expires = tokenExpiryTimeStamp,
                 Issuer = issuer,
                 Audience = audience,
@@ -63,10 +70,25 @@ namespace OnlineBookShop.Security
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
             var accessToken = tokenHandler.WriteToken(securityToken);
 
+
+            var roles = await _roleRepository.FindByRoleName(userAccount.Role);
+            var privileges = new List<string>();
+
+                // Retrieve privileges by role
+            var rolePrivileges = await _privilegeDetailsRepository.FindAllRoleWisePrivilageDetails(roles.Id);
+            if (rolePrivileges != null)
+            {
+                privileges.AddRange(rolePrivileges.Select(p => p.Privilege?.PrivilegeName));
+            }
+
+
             return new LoginResponseDTO
             {
                 AccessToken = accessToken,
-                UserName = request.UserName,
+                UserName = userAccount.UserName,
+                Role = userAccount.Role,
+                UserCode = userAccount.UserCode,
+                Privilages = privileges.Distinct().ToList(),
                 ExpiresIn = (int)tokenExpiryTimeStamp.Subtract(DateTime.UtcNow).TotalSeconds
             };
         }
