@@ -32,6 +32,11 @@ namespace OnlineBookShop.Repository
          .Where(u => u.Role == role)
          .ToListAsync();
         }
+        public async Task<User?> GetLastUserAsync()
+        {
+            return await _dbContext.users.OrderByDescending(u => u.Id).FirstOrDefaultAsync();
+        }
+
 
     }
 }

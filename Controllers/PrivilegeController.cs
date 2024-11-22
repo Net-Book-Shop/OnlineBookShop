@@ -17,7 +17,7 @@ namespace OnlineBookShop.Controllers
             _privilageService = privilageService;
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("AddPrivilage")]
         public async Task<ActionResult<ResponseMessage>> AddPrivilage(PrivilageRequestDTO requestDTO)
         {
@@ -25,14 +25,14 @@ namespace OnlineBookShop.Controllers
             return result;
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("GetRoleWisePrivileges")]
         public async Task<ActionResult<ResponseMessage>> GetRoleWisePrivileges(PrivilageRequestDTO requestDTO)
         {
             var result = await _privilageService.GetRoleWisePrivileges(requestDTO);
             return result;
         }
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("GetAllPrivileges")]
         public async Task<ActionResult<ResponseMessage>> GetAllPrivileges()
         {
@@ -40,14 +40,14 @@ namespace OnlineBookShop.Controllers
             return result;
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("AssignPrivileges")]
         public async Task<ActionResult<ResponseMessage>> AssignPrivileges(PrivilageRequestDTO requestDTO)
         {
             var result = await _privilageService.AssignPrivileges(requestDTO);
             return result;
         }
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost("UpdatePrivilages")]
         public async Task<ActionResult<ResponseMessage>> UpdatePrivilages(PrivilageRequestDTO requestDTO)
         {

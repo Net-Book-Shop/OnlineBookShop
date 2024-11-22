@@ -59,12 +59,15 @@ namespace OnlineBookShop.Service.Impl
                     Message = "User already exists."
                 };
             }
+            // Generate a new userCode
+            string userCode = await GenerateUserCodeAsync();
 
             var newUser = new User
             {
                 UserName = userRegister.UserName,
                 Email = userRegister.Email,
-                Role = userRegister.Role
+                Role = userRegister.Role,
+                UserCode = userCode
             };
 
             // Hash the password
@@ -79,5 +82,26 @@ namespace OnlineBookShop.Service.Impl
             };
 
         }
+
+        private async Task<string> GenerateUserCodeAsync()
+        {
+            var lastUser = await _userRepository.GetLastUserAsync(); 
+
+            if (lastUser != null && !string.IsNullOrEmpty(lastUser.UserCode))
+            {
+                string lastUserCode = lastUser.UserCode;
+
+                if (lastUserCode.Length > 1 && lastUserCode.StartsWith("U"))
+                {
+                    if (int.TryParse(lastUserCode.Substring(1), out int numericPart))
+                    {
+                        return "U" + (numericPart + 1).ToString("D4");
+                    }
+                }
+            }
+      
+            return "U0001";
+        }
+
     }
 }
