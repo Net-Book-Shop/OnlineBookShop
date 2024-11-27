@@ -5,14 +5,31 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineBookShop.Data;
 using OnlineBookShop.Security;
+using OnlineBookShop.Service.Impl;
+using OnlineBookShop.Service;
 using System.Text;
+using OnlineBookShop.Repository;
+using Microsoft.AspNetCore.Identity;
+using OnlineBookShop.Model;
+using ProductMiniApi.Repository.Implementation;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddCors(options =>
+{
+    // Add CORS configuration
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") 
+              .AllowAnyHeader()                   
+              .AllowAnyMethod()                    
+              .AllowCredentials();              
+    });
+});
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -49,10 +66,6 @@ builder.Services.
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-// Add Identity services
-//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-//    .AddEntityFrameworkStores<ApplicationDBContext>()
-//    .AddDefaultTokenProviders();
 
 
 
@@ -69,8 +82,8 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
@@ -79,8 +92,25 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthentication();
 
+
+//service add
+builder.Services.AddScoped<PasswordHasher<User>>();
+builder.Services.AddAuthentication();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPrivilageService, PrivilageService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IFileService, FileService>();
+//repository
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<PrivilegeRepository>();
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<PrivilegeDetailsRepository>();
+builder.Services.AddScoped<CategoryRepository>();
 
 
 var app = builder.Build();
@@ -93,6 +123,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware
+app.UseCors("AllowAngularApp");
 app.UseAuthentication(); 
 app.UseAuthorization();
 

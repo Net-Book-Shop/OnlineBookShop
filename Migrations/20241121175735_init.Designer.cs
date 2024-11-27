@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineBookShop.Data;
 
@@ -11,9 +12,11 @@ using OnlineBookShop.Data;
 namespace OnlineBookShop.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241121175735_init")]
+    partial class init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,24 +97,13 @@ namespace OnlineBookShop.Migrations
                     b.Property<int>("IsActive")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProductImage")
-                        .HasColumnType("longtext");
-
                     b.Property<int>("Qty")
                         .HasColumnType("int");
 
                     b.Property<double>("SellingPrice")
                         .HasColumnType("double");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("SubCategoryName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Supplier")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -399,10 +391,6 @@ namespace OnlineBookShop.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("UserCode")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -414,11 +402,10 @@ namespace OnlineBookShop.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("6ad96b5b-155c-4a0e-8d69-d20aac67aa91"),
+                            Id = new Guid("e063510c-b095-46ce-b61b-003063405193"),
                             Email = "admin@gmail.com",
                             Password = "admin@1234",
                             Role = "Admin",
-                            UserCode = "U0001",
                             UserName = "admin"
                         });
                 });
