@@ -5,6 +5,6 @@ namespace OnlineBookShop.Service
 {
     public interface IBookService
     {
-        Task<ResponseMessage> AddBook(BookDTO requestDTO);
+        Task <ResponseMessage> AddBook(AddBookRequestDTO requestDTO);
     }
 }
