@@ -231,5 +231,55 @@ namespace OnlineBookShop.Service.Impl
                 throw new Exception($"Failed Book Review Add : {ex.Message}", ex);
             }
         }
+
+        public async Task<ResponseMessage> UpdateBookDetail(BookDTO requestDTO)
+        {
+            try
+            {
+                if (requestDTO == null)
+                {
+                    throw new Exception("Request data is null.");
+                }
+                var existBook = await _repository.GetBookByCode(requestDTO.BookCode);
+
+                if(existBook == null)
+                {
+                    throw new Exception("Book Details is empty");
+                }
+
+                if (string.IsNullOrEmpty(requestDTO.Description))
+                {
+                    existBook.Description= requestDTO.Description;
+                }else if (string.IsNullOrEmpty(requestDTO.Supplier)){
+                    existBook.Supplier = requestDTO.Supplier;
+                }else if (requestDTO.CostPrice > 0){
+                    existBook.CostPrice = requestDTO.CostPrice??0;
+                }else if (requestDTO.SellingPrice > 0)
+                {
+                    existBook.SellingPrice = requestDTO.SellingPrice ?? 0;
+                }
+                else if (requestDTO.Qty >= 0)
+                {
+                    var qty = existBook.Qty - requestDTO.Qty ?? 0;
+                    existBook.Qty= qty;
+                    if (qty == 0)
+                    {
+                        existBook.Status = "Sold Out";
+                    }
+                }
+
+                await _repository.UpdateBook(existBook);
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "succsess"
+                };
+
+            }
+            catch (Exception ex) {
+                throw new Exception($"Failed Book Update : {ex.Message}", ex);
+            }
+        }
     }
 }

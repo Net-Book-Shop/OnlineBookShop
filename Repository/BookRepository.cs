@@ -50,6 +50,12 @@ namespace OnlineBookShop.Repository
 
         }
 
+        public async Task UpdateBook(Books books)
+        {
+            _dbContext.Book.Update(books);
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task SaveReview(Reviews reviews)
         {
             _dbContext.Reviews.Add(reviews);

@@ -9,6 +9,7 @@ namespace OnlineBookShop.Service.Impl
     {
         private readonly OrderRepository _orderRepository;
         private readonly CustomerRepository _customerRepository;
+        private readonly BookRepository _bookRepository;
 
         public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository)
         {
@@ -54,6 +55,7 @@ namespace OnlineBookShop.Service.Impl
                     CustomerEmail = orderRequest.CustomerEmail ?? "Unknown",
                     DeliveryFee = orderRequest.DeliveryFee ?? 0,
                     PaymentMethod = orderRequest.PaymentMethod ?? "Not Specified",
+                    BankTransactionId = orderRequest.BankTransactionId ?? "N/A",
                     Discount = orderRequest.Discount ?? 0,
                     OrderAmount = orderRequest.OrderAmount ?? 0,
                     TotalCostPrice = orderRequest.TotalCostPrice ?? 0,
@@ -84,6 +86,28 @@ namespace OnlineBookShop.Service.Impl
 
                 // Save the order details to the database
                 _orderRepository.SaveOrderDetails(orderDetails);
+
+                foreach (var item in orderRequest.OrderDetails)
+                {
+                    // Get the book by its BookCode
+                    var existBook = await _bookRepository.GetBookByCode(item.BookCode);
+
+                    if (existBook != null && item.Qty >= 0)
+                    {
+                        // Update book quantity
+                        var newQty = existBook.Qty - item.Qty ?? 0;
+                        existBook.Qty = newQty;
+
+                        // Check if book is sold out
+                        if (newQty == 0)
+                        {
+                            existBook.Status = "Sold Out";
+                        }
+
+                        // Update the book details in the database
+                        await _bookRepository.UpdateBook(existBook);
+                    }
+                }
 
                 return savedOrder;
             }

@@ -9,5 +9,6 @@ namespace OnlineBookShop.Service
         Task<ResponseMessage> AddBookReviewAndRating(ReviewRequestDTO requestDTO);
         Task<ResponseMessage> GetAllBokkCategoryWise(BookSearchRequestDTO requestDTO);
         Task<ResponseMessage> GetAllBookWiseReviewCount();
+        Task<ResponseMessage> UpdateBookDetail(BookDTO requestDTO);
     }
 }
