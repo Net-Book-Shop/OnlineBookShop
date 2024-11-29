@@ -26,11 +26,27 @@ namespace OnlineBookShop.Controllers
             var result = await _categoryService.AddCategory(requestDTO);
             return result;
         }
-        [Authorize]
+        [AllowAnonymous]
         [HttpPost("AddSubCategory")]
         public async Task<ActionResult<ResponseMessage>> AddSubCategory(CategoryRequestDTO requestDTO)
         {
             var result = await _categoryService.AddSubCategory(requestDTO);
+            return result;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetAllCategory")]
+        public async Task<ActionResult<ResponseMessage>> GetAllCategory()
+        {
+            var result = await _categoryService.GetAllCategory();
+            return result;
+        }
+        
+        [AllowAnonymous]
+        [HttpGet("GetAllSubCategory")]
+        public async Task<ActionResult<ResponseMessage>> GetAllSubCategory()
+        {
+            var result = await _categoryService.GetAllSubCategory();
             return result;
         }
     }

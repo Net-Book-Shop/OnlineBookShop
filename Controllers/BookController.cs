@@ -21,13 +21,6 @@ namespace OnlineBookShop.Controllers
             _fileService = fileService;
         }
 
-        [AllowAnonymous]
-        [HttpPost("AddBook")]
-        public async Task<ActionResult<ResponseMessage>> AddBook(AddBookRequestDTO requestDTO)
-        {
-            var result = await _bookService.AddBook(requestDTO);
-            return result;
-        }
 
         [Authorize]
         [HttpPost("Add")]
@@ -64,6 +57,29 @@ namespace OnlineBookShop.Controllers
             var result = await _bookService.AddBook(model);
 
             return (result); // Ensure only ResponseMessage is returned
+        }
+        [AllowAnonymous]
+        [HttpPost("GetAllBookCategoryWise")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookCategoryWise(BookSearchRequestDTO requestDTO)
+        {
+            var result = await _bookService.GetAllBokkCategoryWise(requestDTO);
+            return result;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("AddBookReviewAndRating")]
+        public async Task<ActionResult<ResponseMessage>> AddBookReviewAndRating(ReviewRequestDTO requestDTO)
+        {
+            var result = await _bookService.AddBookReviewAndRating(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpGet("GetAllBookWiseReviewCount")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookWiseReviewCount()
+        {
+            var result = await _bookService.GetAllBookWiseReviewCount();
+            return result;
         }
 
     }

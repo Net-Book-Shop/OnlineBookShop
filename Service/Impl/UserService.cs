@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using OnlineBookShop.Data;
 using OnlineBookShop.Dto;
 using OnlineBookShop.Model;
@@ -46,6 +47,34 @@ namespace OnlineBookShop.Service.Impl
                 Message = "Users retrieved successfully.",
                 Data = users
             };
+        }
+
+        public async Task<ActionResult<ResponseMessage>> UpdateUser(UserRegistorRequestDTO requestDTO)
+        {
+            try {
+                if (string.IsNullOrEmpty(requestDTO.UserName))
+                {
+                    throw new Exception("User name is empty!");
+                }
+                var existingUser = await _userRepository.FindByUserName(requestDTO.UserName);
+                if (existingUser == null)
+                {
+                    throw new Exception("Cant find a user!");
+                }
+                existingUser.UserName = requestDTO.UserName;
+                existingUser.Password = _passwordHasher.HashPassword(existingUser, requestDTO.Password);
+                existingUser.Email = requestDTO.Email;
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "User Update successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed Update Customer: {ex.Message}", ex);
+            }
         }
 
         public async Task<ResponseMessage> UserRegistor(UserRegistorRequestDTO userRegister)

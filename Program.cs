@@ -103,6 +103,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<ICustomerService,CustomerService>();
 //repository
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<PrivilegeRepository>();
@@ -111,6 +112,7 @@ builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<PrivilegeDetailsRepository>();
 builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<CustomerRepository>();
 
 
 var app = builder.Build();
