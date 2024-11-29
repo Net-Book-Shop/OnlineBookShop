@@ -34,7 +34,7 @@ namespace OnlineBookShop.Data
                 new User{
                     Id = Guid.NewGuid(),
                     UserName ="admin",
-                    UserCode="U001",
+                    UserCode="U0001",
                     Email="admin@gmail.com",
                     Password = "admin@1234",
                     Role ="Admin"

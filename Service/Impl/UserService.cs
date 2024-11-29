@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using OnlineBookShop.Data;
 using OnlineBookShop.Dto;
 using OnlineBookShop.Model;
@@ -48,6 +49,34 @@ namespace OnlineBookShop.Service.Impl
             };
         }
 
+        public async Task<ActionResult<ResponseMessage>> UpdateUser(UserRegistorRequestDTO requestDTO)
+        {
+            try {
+                if (string.IsNullOrEmpty(requestDTO.UserName))
+                {
+                    throw new Exception("User name is empty!");
+                }
+                var existingUser = await _userRepository.FindByUserName(requestDTO.UserName);
+                if (existingUser == null)
+                {
+                    throw new Exception("Cant find a user!");
+                }
+                existingUser.UserName = requestDTO.UserName;
+                existingUser.Password = _passwordHasher.HashPassword(existingUser, requestDTO.Password);
+                existingUser.Email = requestDTO.Email;
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "User Update successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed Update Customer: {ex.Message}", ex);
+            }
+        }
+
         public async Task<ResponseMessage> UserRegistor(UserRegistorRequestDTO userRegister)
         {
             var existingUser = await _userRepository.FindByUserName(userRegister.UserName);
@@ -59,12 +88,15 @@ namespace OnlineBookShop.Service.Impl
                     Message = "User already exists."
                 };
             }
+            // Generate a new userCode
+            string userCode = await GenerateUserCodeAsync();
 
             var newUser = new User
             {
                 UserName = userRegister.UserName,
                 Email = userRegister.Email,
-                Role = userRegister.Role
+                Role = userRegister.Role,
+                UserCode = userCode
             };
 
             // Hash the password
@@ -79,5 +111,26 @@ namespace OnlineBookShop.Service.Impl
             };
 
         }
+
+        private async Task<string> GenerateUserCodeAsync()
+        {
+            var lastUser = await _userRepository.GetLastUserAsync(); 
+
+            if (lastUser != null && !string.IsNullOrEmpty(lastUser.UserCode))
+            {
+                string lastUserCode = lastUser.UserCode;
+
+                if (lastUserCode.Length > 1 && lastUserCode.StartsWith("U"))
+                {
+                    if (int.TryParse(lastUserCode.Substring(1), out int numericPart))
+                    {
+                        return "U" + (numericPart + 1).ToString("D4");
+                    }
+                }
+            }
+      
+            return "U0001";
+        }
+
     }
 }
