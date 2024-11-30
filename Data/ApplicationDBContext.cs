@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineBookShop.Model;
+using System.Collections.Generic;
 
 namespace OnlineBookShop.Data
 {
@@ -23,8 +24,6 @@ namespace OnlineBookShop.Data
         public DbSet<Orders> Orders { get; set; }
         public DbSet<OrderDetails> OrderDetails { get; set; }
         public DbSet<Reviews> Reviews { get; set; }
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

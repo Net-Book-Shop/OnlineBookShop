@@ -11,20 +11,24 @@ namespace OnlineBookShop.Service.Impl
         private readonly CustomerRepository _customerRepository;
         private readonly BookRepository _bookRepository;
 
-        public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository)
+        public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository, BookRepository bookRepository)
         {
             _orderRepository = orderRepository;
             _customerRepository = customerRepository;
+            _bookRepository = bookRepository;
         }
 
-        public async Task<Orders> SaveOrder(OrderRequestDTO orderRequest)
+        public async Task<ResponseMessage> SaveOrder(OrderRequestDTO orderRequest)
         {
             try
             {
-                if(string.IsNullOrEmpty(orderRequest.Customer.MobileNumber)|| string.IsNullOrEmpty(orderRequest.Customer.Address)|| string.IsNullOrEmpty(orderRequest.Customer.Name))
+                if (string.IsNullOrEmpty(orderRequest.Customer.MobileNumber) ||
+                    string.IsNullOrEmpty(orderRequest.Customer.Address) ||
+                    string.IsNullOrEmpty(orderRequest.Customer.Name))
                 {
                     throw new Exception("Customer data is empty");
                 }
+
                 var existCustomer = await _customerRepository.FindByCustomerMobile(orderRequest.Customer.MobileNumber);
                 if (existCustomer == null)
                 {
@@ -38,13 +42,11 @@ namespace OnlineBookShop.Service.Impl
                         OrderCount = 0,
                         IsActive = true
                     };
-                    _customerRepository.SaveCustomer(customerObj);
+                    await _customerRepository.SaveCustomer(customerObj);
                 }
-                
-                // Generate a unique order code
+
                 var orderCode = await GenerateOrderCodeAsync();
 
-                // Map the order request DTO to the database model
                 var order = new Orders
                 {
                     OrderCode = orderCode,
@@ -65,58 +67,54 @@ namespace OnlineBookShop.Service.Impl
                     IsActive = 1
                 };
 
-                // Save the order to the database
-                var savedOrder = _orderRepository.SaveOrder(order);
+                var savedOrder = await _orderRepository.SaveOrderAsync(order);
 
-                // Prepare and map order details
-                var orderDetails = orderRequest.OrderDetails
-                    .Select(item => new OrderDetails
-                    {
-                        OrderCode=savedOrder.OrderCode,
-                        BookCode = item.BookCode ?? "Unknown",
-                        Qty = item.Qty ?? 0,
-                        UnitCostPrice = item.UnitCostPrice ?? 0,
-                        UnitSellingPrice = item.UnitSellingPrice ?? 0,
-                        Total = item.Total ?? 0,
-                        Status = "Pending",
-                        IsActive = 1,
-                        OrderID = savedOrder.Id,
-                        Orders = savedOrder
-                    }).ToList();
+                var orderDetails = orderRequest.OrderDetails.Select(item => new OrderDetails
+                {
+                    OrderCode = savedOrder.OrderCode,
+                    BookCode = item.BookCode ?? "Unknown",
+                    Qty = item.Qty ?? 0,
+                    UnitCostPrice = item.UnitCostPrice ?? 0,
+                    UnitSellingPrice = item.UnitSellingPrice ?? 0,
+                    Total = item.Total ?? 0,
+                    Status = "Pending",
+                    IsActive = 1,
+                    OrderID = savedOrder.Id,
+                    Orders = savedOrder
+                }).ToList();
 
-                // Save the order details to the database
-                _orderRepository.SaveOrderDetails(orderDetails);
+                await _orderRepository.SaveOrderDetailsAsync(orderDetails);
 
                 foreach (var item in orderRequest.OrderDetails)
                 {
-                    // Get the book by its BookCode
                     var existBook = await _bookRepository.GetBookByCode(item.BookCode);
 
                     if (existBook != null && item.Qty >= 0)
                     {
-                        // Update book quantity
-                        var newQty = existBook.Qty - item.Qty ?? 0;
-                        existBook.Qty = newQty;
+                        existBook.Qty -= item.Qty ?? 0;
 
-                        // Check if book is sold out
-                        if (newQty == 0)
+                        if (existBook.Qty == 0)
                         {
                             existBook.Status = "Sold Out";
                         }
 
-                        // Update the book details in the database
                         await _bookRepository.UpdateBook(existBook);
                     }
                 }
 
-                return savedOrder;
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "Order saved successfully.",
+                    Data = savedOrder.Id
+                };
             }
             catch (Exception ex)
             {
-                // Log the exception (you can implement logging here)
                 throw new Exception($"Failed to save order: {ex.Message}", ex);
             }
         }
+
 
         public async Task<ResponseMessage> UpdateOrderStatus(OrderUpdateRequestDTO request)
         {
@@ -131,7 +129,7 @@ namespace OnlineBookShop.Service.Impl
                 existOrder.Status = request.Status;
                 existOrder.UpdateDate= DateTime.Now;
 
-                _orderRepository.UpdateOrder(existOrder);
+                await _orderRepository.UpdateOrder(existOrder);
 
                 return new ResponseMessage
                 {
@@ -194,5 +192,40 @@ namespace OnlineBookShop.Service.Impl
             }
         }
 
+        public async Task<ResponseMessage> GetIncomeAndLastMonthProfit()
+        {
+            try
+            {
+                var sumsDataObj = await _orderRepository.GetDeleveryFeeDiscountOrderAmountTotalCostSum("Delivered");
+                var cusotmer = await _customerRepository.ActiveCustomerCount();
+               
+
+                var lastMonthProfit = sumsDataObj.OrderAmountSum - (sumsDataObj.TotalCostPriceSum + sumsDataObj.DiscountSum + sumsDataObj.DeliveryFeeSum) ;
+                var totalOrderAmount = sumsDataObj.OrderAmountSum;
+                var totalDiscount = sumsDataObj.DiscountSum;
+                var totalDeliveryFee = sumsDataObj.DeliveryFeeSum;
+                var totalCostprice = sumsDataObj.TotalCostPriceSum;
+
+                var dashboarddto = new DashboardResponseDTO
+                {
+                    LastMonthProfit = lastMonthProfit,
+                    TotaDeliveryFee = totalDeliveryFee,
+                    TotalCostPrice = totalCostprice,
+                    TotaDiscount = totalDiscount,
+                    TotaOrderAmunt = totalOrderAmount,
+                    TotaCustomer = cusotmer
+                };
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "successfully.",
+                    Data = dashboarddto
+                };
+
+            }
+            catch (Exception ex) {
+                throw new Exception($"Failed to generate Income and Moth profit: {ex.Message}", ex);
+            }
+        }
     }
 }
