@@ -1,6 +1,7 @@
 ﻿using ConstrunctionApp.Model;
 using OnlineBookShop.Dto;
 using OnlineBookShop.Model;
+using OnlineBookShop.Other;
 using OnlineBookShop.Repository;
 
 namespace OnlineBookShop.Service.Impl
@@ -10,12 +11,14 @@ namespace OnlineBookShop.Service.Impl
         private readonly OrderRepository _orderRepository;
         private readonly CustomerRepository _customerRepository;
         private readonly BookRepository _bookRepository;
+        private readonly EmailService _emailService;
 
-        public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository, BookRepository bookRepository)
+        public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository, BookRepository bookRepository, EmailService emailService)
         {
             _orderRepository = orderRepository;
             _customerRepository = customerRepository;
             _bookRepository = bookRepository;
+            _emailService = emailService;
         }
 
         public async Task<ResponseMessage> SaveOrder(OrderRequestDTO orderRequest)
@@ -101,6 +104,12 @@ namespace OnlineBookShop.Service.Impl
                         await _bookRepository.UpdateBook(existBook);
                     }
                 }
+
+                string toEmail = "noreply.admin@gmail.com"; 
+                string emailBody = GenerateOrderEmailBody(orderRequest, savedOrder, orderDetails);
+
+                // Send the email
+                await _emailService.SendEmailAsync(toEmail, savedOrder.OrderCode, emailBody, "no-reply@yourdomain.com");
 
                 return new ResponseMessage
                 {
@@ -226,6 +235,45 @@ namespace OnlineBookShop.Service.Impl
             catch (Exception ex) {
                 throw new Exception($"Failed to generate Income and Moth profit: {ex.Message}", ex);
             }
+        }
+        private string GenerateOrderEmailBody(OrderRequestDTO orderRequest, Orders savedOrder, List<OrderDetails> orderDetails)
+        {
+            var emailBody = $@"
+        <h2>New Order Received</h2>
+        <p><strong>Customer Name:</strong> {orderRequest.Customer.Name}</p>
+        <p><strong>Address:</strong> {orderRequest.Customer.Address}</p>
+        <p><strong>City:</strong> {orderRequest.Customer.City}</p>
+        <p><strong>Mobile:</strong> {orderRequest.Customer.MobileNumber}</p>
+        <h3>Order Details:</h3>
+        <table border='1' cellpadding='5' cellspacing='0'>
+            <thead>
+                <tr>
+                    <th>Book Name</th>
+                    <th>Quantity</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>";
+
+            foreach (var detail in orderDetails)
+            {
+                emailBody += $@"
+            <tr>
+                <td>{detail.BookCode}</td> <!-- You can replace with actual book name -->
+                <td>{detail.Qty}</td>
+                <td>{detail.Total:C}</td>
+            </tr>";
+            }
+
+            emailBody += $@"
+            </tbody>
+        </table>
+        <p><strong>Total Order Amount:</strong> {savedOrder.OrderAmount:C}</p>
+        <p><strong>Order Code:</strong> {savedOrder.OrderCode}</p>
+        <p><strong>Status:</strong> {savedOrder.Status}</p>
+        <p>Thank you for your order!</p>";
+
+            return emailBody;
         }
     }
 }

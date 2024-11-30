@@ -84,9 +84,17 @@ namespace OnlineBookShop.Controllers
 
         [Authorize]
         [HttpPost("UpdateBookDetail")]
-        public async Task<ActionResult<ResponseMessage>> UpdateBookDetail(BookDTO requestDTO)
+        public async Task<ActionResult<ResponseMessage>> UpdateBookDetail(UpdateBookRequeatDTO requestDTO)
         {
             var result = await _bookService.UpdateBookDetail(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("GetAllBookDateAndCodeWise")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookDateAndCodeWise(BookSearchRequestDTO requestDTO)
+        {
+            var result = await _bookService.GetAllBookDateAndCodeWise(requestDTO);
             return result;
         }
     }

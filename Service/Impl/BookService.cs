@@ -232,7 +232,7 @@ namespace OnlineBookShop.Service.Impl
             }
         }
 
-        public async Task<ResponseMessage> UpdateBookDetail(BookDTO requestDTO)
+        public async Task<ResponseMessage> UpdateBookDetail(UpdateBookRequeatDTO requestDTO)
         {
             try
             {
@@ -240,32 +240,41 @@ namespace OnlineBookShop.Service.Impl
                 {
                     throw new Exception("Request data is null.");
                 }
+
+                // Fetch the existing book by its code
                 var existBook = await _repository.GetBookByCode(requestDTO.BookCode);
-
-                if(existBook == null)
+                if (existBook == null)
                 {
-                    throw new Exception("Book Details is empty");
+                    throw new Exception("Book details not found.");
                 }
 
-                if (string.IsNullOrEmpty(requestDTO.Description))
+                if (!string.IsNullOrEmpty(requestDTO.Description))
                 {
-                    existBook.Description= requestDTO.Description;
-                }else if (string.IsNullOrEmpty(requestDTO.Supplier)){
+                    existBook.Description = requestDTO.Description;
+                }
+
+                if (!string.IsNullOrEmpty(requestDTO.Supplier))
+                {
                     existBook.Supplier = requestDTO.Supplier;
-                }else if (requestDTO.CostPrice > 0){
-                    existBook.CostPrice = requestDTO.CostPrice??0;
-                }else if (requestDTO.SellingPrice > 0)
-                {
-                    existBook.SellingPrice = requestDTO.SellingPrice ?? 0;
                 }
-                else if (requestDTO.Qty >= 0)
+
+                if (requestDTO.CostPrice.HasValue && requestDTO.CostPrice > 0)
                 {
-                    var qty = existBook.Qty - requestDTO.Qty ?? 0;
-                    existBook.Qty= qty;
-                    if (qty == 0)
-                    {
-                        existBook.Status = "Sold Out";
-                    }
+                    existBook.CostPrice = requestDTO.CostPrice.Value;
+                }
+
+                if (requestDTO.SellingPrice.HasValue && requestDTO.SellingPrice > 0)
+                {
+                    existBook.SellingPrice = requestDTO.SellingPrice.Value;
+                }
+
+                if (requestDTO.Qty.HasValue)
+                {
+                    // Add or subtract quantity
+                    existBook.Qty += requestDTO.Qty.Value;
+
+                    // Update the status based on the quantity
+                    existBook.Status = existBook.Qty <= 0 ? "Sold Out" : "Available";
                 }
 
                 await _repository.UpdateBook(existBook);
@@ -273,12 +282,97 @@ namespace OnlineBookShop.Service.Impl
                 return new ResponseMessage
                 {
                     StatusCode = 200,
-                    Message = "succsess"
+                    Message = "Book details updated successfully."
                 };
-
             }
-            catch (Exception ex) {
-                throw new Exception($"Failed Book Update : {ex.Message}", ex);
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to update book: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<ResponseMessage> GetAllBookDateAndCodeWise(BookSearchRequestDTO requestDTO)
+        {
+            try
+            {
+                List<Books> books;
+
+                if (string.IsNullOrEmpty(requestDTO.FromDate) && string.IsNullOrEmpty(requestDTO.ToDate) && string.IsNullOrEmpty(requestDTO.BookCode))
+                {
+                    books = await _repository.GetAllBookDateAndCodeWise(null, null, null);
+                }
+                else if (!string.IsNullOrEmpty(requestDTO.FromDate) && string.IsNullOrEmpty(requestDTO.ToDate) && string.IsNullOrEmpty(requestDTO.BookCode))
+                {
+                    books = await _repository.GetAllBookDateAndCodeWise(requestDTO.FromDate, null, null);
+                }
+                else if (string.IsNullOrEmpty(requestDTO.FromDate) && !string.IsNullOrEmpty(requestDTO.ToDate) && string.IsNullOrEmpty(requestDTO.BookCode))
+                {
+                    books = await _repository.GetAllBookDateAndCodeWise(null, requestDTO.ToDate, null);
+                }
+                else if (string.IsNullOrEmpty(requestDTO.FromDate) && string.IsNullOrEmpty(requestDTO.ToDate) && !string.IsNullOrEmpty(requestDTO.BookCode))
+                {
+                    books = await _repository.GetAllBookDateAndCodeWise(null, null, requestDTO.BookCode);
+                }
+                else 
+                {
+                    books = await _repository.GetAllBookDateAndCodeWise(requestDTO.FromDate, requestDTO.ToDate, requestDTO.BookCode);
+                }
+
+
+                var bookDTOs = new List<BookDTO>();
+
+                // Map and populate reviews
+                foreach (var book in books)
+                {
+                    var review = await _repository.GetReviewsByBookCode(book.BookCode);
+                    List<ReviewRequestDTO> reviewDtoList = null;
+                    if (review.Count > 0)
+                    {
+                        reviewDtoList = review.Select(review => new ReviewRequestDTO
+                        {
+                            BookCode = review.BookCode,
+                            CustomerName = review.CustomerName,
+                            MobileNumber = review.MobileNumber,
+                            Rating = review.Rating,
+                            Review = review.Review
+                        }).ToList();
+                    }
+
+
+                    bookDTOs.Add(new BookDTO
+                    {
+                        Id = book.Id.ToString(),
+                        BookCode = book.BookCode,
+                        CategoryName = book.CategoryName,
+                        SubCategoryName = book.SubCategoryName,
+                        CategoryCode = book.CategoryCode,
+                        Qty = book.Qty,
+                        CostPrice = book.CostPrice,
+                        SellingPrice = book.SellingPrice,
+                        BookName = book.BookName,
+                        Description = book.Description,
+                        Status = book.Status,
+                        Supplier = book.Supplier,
+                        rating = book.rating,
+                        CreateDate = book.CreateDate.ToString("yyyy-MM-dd"),
+                        UpdateDate = book.UpdateDate.ToString("yyyy-MM-dd"),
+                        IsActive = book.IsActive,
+                        ProductImage = book.ProductImage,
+                        reviews = reviewDtoList
+                    });
+                }
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "Books retrieved successfully.",
+                    Data = bookDTOs
+                };
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"An error occurred: {ex.Message}", ex);
             }
         }
     }

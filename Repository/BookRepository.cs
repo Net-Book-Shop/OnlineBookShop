@@ -52,7 +52,8 @@ namespace OnlineBookShop.Repository
 
         public async Task UpdateBook(Books books)
         {
-            _dbContext.Book.Update(books);
+            _dbContext.Book.Attach(books);
+            _dbContext.Entry(books).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }
 
@@ -80,6 +81,30 @@ namespace OnlineBookShop.Repository
 
             return reviewCounts.Select(r => (r.Count, r.Code)).ToList();
         }
+
+        public async Task<List<Books>> GetAllBookDateAndCodeWise( string? fromDate, string? toDate, string? bookCode)
+        {
+            var query = _dbContext.Book.AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(fromDate) && DateTime.TryParse(fromDate, out DateTime from))
+            {
+                query = query.Where(book => book.CreateDate >= from);
+            }
+
+            if (!string.IsNullOrEmpty(toDate) && DateTime.TryParse(toDate, out DateTime to))
+            {
+                query = query.Where(book => book.CreateDate <= to);
+            }
+
+            if (!string.IsNullOrEmpty(bookCode))
+            {
+                query = query.Where(book => book.BookCode == bookCode);
+            }
+
+            return await query.ToListAsync();
+        }
+
 
 
     }
