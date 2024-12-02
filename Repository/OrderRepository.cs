@@ -57,7 +57,7 @@ namespace OnlineBookShop.Repository
             return await _dbContext.OrderDetails.Where(x => x.OrderCode == ordercode).ToListAsync();
         }
 
-        public async Task<List<Orders>> GetOrdersByCriteriaAsync(string? status, string? orderCode, DateTime? fromDate, DateTime? toDate)
+        public async Task<List<Orders>> GetOrdersByCriteriaAsync(string? status, string? orderCode, DateTime? fromDate, DateTime? toDate, string? createUser)
         {
             var query = _dbContext.Orders.AsQueryable();
 
@@ -69,6 +69,10 @@ namespace OnlineBookShop.Repository
             if (!string.IsNullOrEmpty(orderCode))
             {
                 query = query.Where(x => x.OrderCode.Contains(orderCode));
+            }
+            if (!string.IsNullOrEmpty(createUser))
+            {
+                query = query.Where(x => x.CreateUser.Contains(createUser));
             }
 
             if (fromDate.HasValue)

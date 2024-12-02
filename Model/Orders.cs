@@ -21,6 +21,7 @@ namespace OnlineBookShop.Model
         public double OrderAmount {  get; set; }
         public double TotalCostPrice {  get; set; }
         public string Status { get; set; }
+        public string? CreateUser { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
         public int IsActive { get; set; }

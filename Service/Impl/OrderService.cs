@@ -64,6 +64,7 @@ namespace OnlineBookShop.Service.Impl
                     BankTransactionId = orderRequest.BankTransactionId ?? "N/A",
                     Discount = orderRequest.Discount ?? 0,
                     OrderAmount = orderRequest.OrderAmount ?? 0,
+                    CreateUser = orderRequest.CreateUser ?? "N/A",
                     TotalCostPrice = orderRequest.TotalCostPrice ?? 0,
                     Status = "Pending",
                     CreateDate = DateTime.Now,
@@ -193,7 +194,9 @@ namespace OnlineBookShop.Service.Impl
                     request.Status,
                     request.OrderCode,
                     fromDate,
-                    toDate
+                    toDate,
+                    request.CreateUser
+
                 );
 
                 if (!orderList.Any())
