@@ -97,5 +97,13 @@ namespace OnlineBookShop.Controllers
             var result = await _bookService.GetAllBookDateAndCodeWise(requestDTO);
             return result;
         }
+
+        [Authorize]
+        [HttpPost("GetAllBookWiseReviews")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookWiseReviews()
+        {
+            var result = await _bookService.GetAllBookWiseReviews();
+            return result;
+        }
     }
 }

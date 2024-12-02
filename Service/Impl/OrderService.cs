@@ -3,6 +3,7 @@ using OnlineBookShop.Dto;
 using OnlineBookShop.Model;
 using OnlineBookShop.Other;
 using OnlineBookShop.Repository;
+using System.Globalization;
 
 namespace OnlineBookShop.Service.Impl
 {
@@ -140,6 +141,22 @@ namespace OnlineBookShop.Service.Impl
 
                 await _orderRepository.UpdateOrder(existOrder);
 
+
+                if (!string.IsNullOrEmpty(existOrder.CustomerEmail))
+                {
+                    if (request.Status == "Picked up" || request.Status == "Delivered" || request.Status == "Cancel")
+                    {
+                        var emailBody = GenerateOrderUpdateEmailBody(request, existOrder);
+                        await _emailService.SendEmailAsync(
+                            existOrder.CustomerEmail, // To: Customer's email
+                            $"Order Status Update: {existOrder.OrderCode}", // Subject
+                            emailBody, // Body
+                            "no-reply@yourdomain.com" // From
+                        );
+                    }
+                }
+                
+
                 return new ResponseMessage
                 {
                     StatusCode = 200,
@@ -155,28 +172,92 @@ namespace OnlineBookShop.Service.Impl
 
         public async Task<ResponseMessage> GetStatusWiseOrderList(OrderUpdateRequestDTO request)
         {
-            try {
-                if (!string.IsNullOrEmpty(request.Status))
+            try
+            {
+                // Parse date inputs
+                DateTime? fromDate = null;
+                DateTime? toDate = null;
+
+                if (!string.IsNullOrEmpty(request.FromDate))
                 {
-                    throw new Exception("status null or empty");
+                    fromDate = DateTime.ParseExact(request.FromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 }
-              var orderList = await _orderRepository.GetOrdersByStatus(request.Status);
-                var orderDtoList = orderList.Select(order => new OrderRequestDTO
-                   {
-                       OrderCode = order.OrderCode
-                   }).ToList();
+
+                if (!string.IsNullOrEmpty(request.ToDate))
+                {
+                    toDate = DateTime.ParseExact(request.ToDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+
+                // Fetch orders matching the criteria
+                var orderList = await _orderRepository.GetOrdersByCriteriaAsync(
+                    request.Status,
+                    request.OrderCode,
+                    fromDate,
+                    toDate
+                );
+
+                if (!orderList.Any())
+                {
+                    return new ResponseMessage
+                    {
+                        StatusCode = 404,
+                        Message = "No orders found matching the criteria.",
+                        Data = null
+                    };
+                }
+
+                var orderDtoList = new List<OrderRequestDTO>();
+
+                foreach (var order in orderList)
+                {
+                    // Fetch order details for the current order
+                    var orderDetails = await _orderRepository.GetOrderDetailsByStatus(order.OrderCode);
+
+                    // Map order details to DTO
+                    var orderDetailsDto = orderDetails.Select(detail => new OrderDetailRequestDTO
+                    {
+                        BookCode = detail.BookCode,
+                        Qty = detail.Qty,
+                        UnitCostPrice = detail.UnitCostPrice,
+                        UnitSellingPrice = detail.UnitSellingPrice,
+                        Total = detail.Total,
+                    }).ToList();
+
+                    // Add the order with its details to the DTO list
+                    orderDtoList.Add(new OrderRequestDTO
+                    {
+                        OrderCode = order.OrderCode,
+                        Status = order.Status,
+                        CreateDate = order.CreateDate.ToString("yyyy-MM-dd"),
+                        OrderAmount = order.OrderAmount,
+                        CustomerName = order.CustomerName,
+                        Address = order.Address,
+                        MobileNumber = order.MobileNumber,
+                        TotalQty = order.TotalQty,
+                        CustomerEmail = order.CustomerEmail,
+                        DeliveryFee = order.DeliveryFee,
+                        PaymentMethod = order.PaymentMethod,
+                        BankTransactionId = order.BankTransactionId,
+                        Discount = order.Discount,
+                        TotalCostPrice = order.TotalCostPrice,
+                        OrderDetails = orderDetailsDto?? new List<OrderDetailRequestDTO>() // Add order details here
+                    });
+                }
 
                 return new ResponseMessage
                 {
                     StatusCode = 200,
-                    Message = "Order Update successfully.",
+                    Message = "Orders retrieved successfully.",
                     Data = orderDtoList
                 };
-            } catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
-                throw new Exception(ex.Message, ex);
+                throw new Exception($"Failed to retrieve orders: {ex.Message}", ex);
             }
         }
+
+
 
         private async Task<string> GenerateOrderCodeAsync()
         {
@@ -275,5 +356,24 @@ namespace OnlineBookShop.Service.Impl
 
             return emailBody;
         }
+
+        private string GenerateOrderUpdateEmailBody(OrderUpdateRequestDTO request, Orders existOrder)
+        {
+            return $@"
+        <h1>Order Status Update</h1>
+        <p>Dear {existOrder.CustomerName},</p>
+        <p>Your order <strong>{existOrder.OrderCode}</strong> has been updated to <strong>{request.Status}</strong>.</p>
+        <p>Order Details:</p>
+        <ul>
+            <li><strong>Order Code:</strong> {existOrder.OrderCode}</li>
+            <li><strong>Status:</strong> {request.Status}</li>
+            <li><strong>Updated Date:</strong> {existOrder.UpdateDate:yyyy-MM-dd HH:mm:ss}</li>
+            <li><strong>Total Amount:</strong> ${existOrder.OrderAmount:F2}</li>
+        </ul>
+        <p>If you have any questions, feel free to contact our support team.</p>
+        <p>Thank you,<br>Your Book Shop Team</p>
+    ";
+        }
+
     }
 }

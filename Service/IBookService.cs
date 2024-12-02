@@ -10,6 +10,7 @@ namespace OnlineBookShop.Service
         Task<ResponseMessage> GetAllBokkCategoryWise(BookSearchRequestDTO requestDTO);
         Task<ResponseMessage> GetAllBookDateAndCodeWise(BookSearchRequestDTO requestDTO);
         Task<ResponseMessage> GetAllBookWiseReviewCount();
+        Task<ResponseMessage> GetAllBookWiseReviews();
         Task<ResponseMessage> UpdateBookDetail(UpdateBookRequeatDTO requestDTO);
     }
 }

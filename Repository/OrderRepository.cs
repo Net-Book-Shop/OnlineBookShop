@@ -52,6 +52,39 @@ namespace OnlineBookShop.Repository
             return await _dbContext.Orders.Where(x => x.Status == status).ToListAsync();
         }
 
+        public async Task<List<OrderDetails>> GetOrderDetailsByStatus(string ordercode)
+        {
+            return await _dbContext.OrderDetails.Where(x => x.OrderCode == ordercode).ToListAsync();
+        }
+
+        public async Task<List<Orders>> GetOrdersByCriteriaAsync(string? status, string? orderCode, DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _dbContext.Orders.AsQueryable();
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(x => x.Status == status);
+            }
+
+            if (!string.IsNullOrEmpty(orderCode))
+            {
+                query = query.Where(x => x.OrderCode.Contains(orderCode));
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(x => x.CreateDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(x => x.CreateDate <= toDate.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
+
         public async Task<(double DeliveryFeeSum, double DiscountSum, double OrderAmountSum, double TotalCostPriceSum)> GetDeleveryFeeDiscountOrderAmountTotalCostSum(string status)
         {
             var lastMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1); // Start of last month

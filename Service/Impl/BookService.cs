@@ -375,5 +375,27 @@ namespace OnlineBookShop.Service.Impl
                 throw new Exception($"An error occurred: {ex.Message}", ex);
             }
         }
+
+        public async Task<ResponseMessage> GetAllBookWiseReviews()
+        {
+            try {
+              var bookList = await _repository.GetAllBookWiseReviews();
+                if(bookList == null)
+                {
+                    throw new Exception("Book review is empty");
+                }
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "successfully.",
+                    Data = bookList
+                };
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"An error occurred: {ex.Message}", ex);
+            }
+        }
     }
 }

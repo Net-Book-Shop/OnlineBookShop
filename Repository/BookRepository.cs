@@ -105,6 +105,25 @@ namespace OnlineBookShop.Repository
             return await query.ToListAsync();
         }
 
+        public async Task<List<ReviewsDTO>> GetAllBookWiseReviews()
+        {
+            var reviews = await (from r in _dbContext.Reviews
+                                 join b in _dbContext.Book
+                                 on r.BookCode equals b.BookCode into bookGroup
+                                 from bg in bookGroup.DefaultIfEmpty()
+                                 select new ReviewsDTO
+                                 {
+                                     Review = r.Review,
+                                     Rating = r.Rating,
+                                     BookCode = r.BookCode,
+                                     BookName = bg != null ? bg.BookName : null,
+                                     CustomerName = r.CustomerName,
+                                     MobileNumber = r.MobileNumber
+                                 }).ToListAsync();
+
+            return reviews;
+        }
+
 
 
     }
