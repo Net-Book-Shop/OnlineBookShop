@@ -82,5 +82,28 @@ namespace OnlineBookShop.Controllers
             return result;
         }
 
+        [Authorize]
+        [HttpPost("UpdateBookDetail")]
+        public async Task<ActionResult<ResponseMessage>> UpdateBookDetail(UpdateBookRequeatDTO requestDTO)
+        {
+            var result = await _bookService.UpdateBookDetail(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("GetAllBookDateAndCodeWise")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookDateAndCodeWise(BookSearchRequestDTO requestDTO)
+        {
+            var result = await _bookService.GetAllBookDateAndCodeWise(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("GetAllBookWiseReviews")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookWiseReviews()
+        {
+            var result = await _bookService.GetAllBookWiseReviews();
+            return result;
+        }
     }
 }

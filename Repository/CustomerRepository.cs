@@ -35,5 +35,11 @@ namespace OnlineBookShop.Repository
         {
             return await _dbContext.customers.ToListAsync();
         }
+
+        public async Task<int> ActiveCustomerCount()
+        {
+            return _dbContext.customers?.Count(c => c.IsActive) ?? 0;
+        }
+
     }
 }

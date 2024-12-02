@@ -19,7 +19,7 @@ namespace OnlineBookShop.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetAllCustomer")]
+        [HttpPost("GetAllCustomer")]
         public async Task<ActionResult<ResponseMessage>> GetAllCustomer()
         {
             var result = await _customerService.GetAllCustomer();

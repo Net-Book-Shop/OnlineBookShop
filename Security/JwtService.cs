@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OnlineBookShop.Data;
 using OnlineBookShop.Dto;
+using OnlineBookShop.Model;
 using OnlineBookShop.Repository;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,15 +17,20 @@ namespace OnlineBookShop.Security
         private readonly IConfiguration _configuration;
         private readonly RoleRepository _roleRepository;
         private readonly PrivilegeDetailsRepository _privilegeDetailsRepository;
-        private readonly PrivilegeRepository _privilegeRepository;
+        private readonly PasswordHasher<User> _passwordHasher;
 
-        public JwtService(UserRepository userRepository, IConfiguration configuration, RoleRepository roleRepository, PrivilegeDetailsRepository privilegeDetailsRepository, PrivilegeRepository privilegeRepository)
+        public JwtService(
+            UserRepository userRepository,
+            IConfiguration configuration,
+            RoleRepository roleRepository,
+            PrivilegeDetailsRepository privilegeDetailsRepository,
+            PasswordHasher<User> passwordHasher)
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _roleRepository = roleRepository;
             _privilegeDetailsRepository = privilegeDetailsRepository;
-            _privilegeRepository = privilegeRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<LoginResponseDTO?> Authenticate(LoginRegisterDTO request)
@@ -33,55 +40,56 @@ namespace OnlineBookShop.Security
 
             var userAccount = await _userRepository.FindByUserName(request.username);
 
-            if (userAccount is null) return null;
+            if (userAccount == null) return null;
+
+            // Validate the password
+            var verificationResult = _passwordHasher.VerifyHashedPassword(userAccount, userAccount.Password, request.password);
+            if (verificationResult == PasswordVerificationResult.Failed)
+                return null;
 
             // Retrieve JWT configuration values
-            var issuer = _configuration["JwtConfig:Issure"];
+            var issuer = _configuration["JwtConfig:Issuer"];
             var audience = _configuration["JwtConfig:Audience"];
             var key = _configuration["JwtConfig:Key"];
             var tokenValidityMins = _configuration.GetValue<int>("JwtConfig:TokenValidityMins");
 
-
-            //Console.WriteLine($"Issuer: {issuer}");
-            //Console.WriteLine($"Audience: {audience}");
-            //Console.WriteLine($"Key: {key}");
-            //Console.WriteLine($"Token Validity: {tokenValidityMins} minutes");
-
-            // Validate that the key is not null or empty
             if (string.IsNullOrWhiteSpace(key))
-            {
                 throw new InvalidOperationException("JWT secret key is not configured.");
-            }
 
             var tokenExpiryTimeStamp = DateTime.UtcNow.AddMinutes(tokenValidityMins);
 
+            // Create token descriptor
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[] { new Claim(JwtRegisteredClaimNames.Name, request.username) }),
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Name, request.username),
+                    new Claim("UserId", userAccount.Id.ToString()),
+                    new Claim(ClaimTypes.Role, userAccount.Role)
+                }),
                 Expires = tokenExpiryTimeStamp,
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
-                    SecurityAlgorithms.HmacSha256),
+                    SecurityAlgorithms.HmacSha256)
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
             var accessToken = tokenHandler.WriteToken(securityToken);
 
-
+            // Retrieve role and privileges
             var roles = await _roleRepository.FindByRoleName(userAccount.Role);
             var privileges = new List<string>();
 
-                // Retrieve privileges by role
             var rolePrivileges = await _privilegeDetailsRepository.FindAllRoleWisePrivilageDetails(roles.Id);
             if (rolePrivileges != null)
             {
                 privileges.AddRange(rolePrivileges.Select(p => p.Privilege?.PrivilegeName));
             }
 
-
+            // Return the login response DTO
             return new LoginResponseDTO
             {
                 AccessToken = accessToken,
@@ -92,6 +100,5 @@ namespace OnlineBookShop.Security
                 ExpiresIn = (int)tokenExpiryTimeStamp.Subtract(DateTime.UtcNow).TotalSeconds
             };
         }
-
     }
 }

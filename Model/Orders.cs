@@ -16,6 +16,7 @@ namespace OnlineBookShop.Model
         public string CustomerEmail {  get; set; }
         public double DeliveryFee {  get; set; }
         public string PaymentMethod { get; set; }
+        public string BankTransactionId { get; set; }
         public double Discount {  get; set; }
         public double OrderAmount {  get; set; }
         public double TotalCostPrice {  get; set; }

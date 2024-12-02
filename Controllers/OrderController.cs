@@ -22,8 +22,7 @@ namespace OnlineBookShop.Controllers
         [HttpPost("saveOrder")]
         public async Task<ActionResult<ResponseMessage>> SaveOrder([FromBody] OrderRequestDTO request)
         {
-            try
-            {
+       
                 if (request == null || request.OrderDetails == null || request.OrderDetails.Count == 0)
                 {
                     return BadRequest(new ResponseMessage
@@ -32,25 +31,8 @@ namespace OnlineBookShop.Controllers
                         Message = "Invalid order request. Please provide valid order and order details."
                     });
                 }
+                return await _orderService.SaveOrder(request);
 
-                // Save the order and details using the service
-                var savedOrder = await _orderService.SaveOrder(request);
-
-                return Ok(new ResponseMessage
-                {
-                    StatusCode = 200,
-                    Message = "Order saved successfully.",
-                    Data = savedOrder.Id
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponseMessage
-                {
-                    StatusCode = 500,
-                    Message = ex.Message
-                });
-            }
         }
         [Authorize]
         [HttpPost("UpdateOrderStatus")]
