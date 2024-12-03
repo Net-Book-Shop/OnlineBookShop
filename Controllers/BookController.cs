@@ -21,13 +21,6 @@ namespace OnlineBookShop.Controllers
             _fileService = fileService;
         }
 
-        [AllowAnonymous]
-        [HttpPost("AddBook")]
-        public async Task<ActionResult<ResponseMessage>> AddBook(AddBookRequestDTO requestDTO)
-        {
-            var result = await _bookService.AddBook(requestDTO);
-            return result;
-        }
 
         [Authorize]
         [HttpPost("Add")]
@@ -65,6 +58,52 @@ namespace OnlineBookShop.Controllers
 
             return (result); // Ensure only ResponseMessage is returned
         }
+        [AllowAnonymous]
+        [HttpPost("GetAllBookCategoryWise")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookCategoryWise(BookSearchRequestDTO requestDTO)
+        {
+            var result = await _bookService.GetAllBokkCategoryWise(requestDTO);
+            return result;
+        }
 
+        [AllowAnonymous]
+        [HttpPost("AddBookReviewAndRating")]
+        public async Task<ActionResult<ResponseMessage>> AddBookReviewAndRating(ReviewRequestDTO requestDTO)
+        {
+            var result = await _bookService.AddBookReviewAndRating(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpGet("GetAllBookWiseReviewCount")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookWiseReviewCount()
+        {
+            var result = await _bookService.GetAllBookWiseReviewCount();
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("UpdateBookDetail")]
+        public async Task<ActionResult<ResponseMessage>> UpdateBookDetail(UpdateBookRequeatDTO requestDTO)
+        {
+            var result = await _bookService.UpdateBookDetail(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("GetAllBookDateAndCodeWise")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookDateAndCodeWise(BookSearchRequestDTO requestDTO)
+        {
+            var result = await _bookService.GetAllBookDateAndCodeWise(requestDTO);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("GetAllBookWiseReviews")]
+        public async Task<ActionResult<ResponseMessage>> GetAllBookWiseReviews()
+        {
+            var result = await _bookService.GetAllBookWiseReviews();
+            return result;
+        }
     }
 }

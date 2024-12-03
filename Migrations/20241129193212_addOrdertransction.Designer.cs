@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineBookShop.Data;
 
@@ -11,9 +12,11 @@ using OnlineBookShop.Data;
 namespace OnlineBookShop.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241129193212_addOrdertransction")]
+    partial class addOrdertransction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,9 +220,6 @@ namespace OnlineBookShop.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("CreateUser")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("CustomerEmail")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -421,9 +421,9 @@ namespace OnlineBookShop.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("9c630ce5-c3e0-4333-a2fe-6e3b11b465a3"),
+                            Id = new Guid("9b8eff43-0cc4-48d9-a21c-862aed85d99b"),
                             Email = "admin@gmail.com",
-                            Password = "AQAAAAIAAYagAAAAEAhOOieON68J8/WZwDpCcwt0bukXvqFLTpHrmDeE3jMNQFnezWH7z+7rWskJ45ZPkw==",
+                            Password = "admin@1234",
                             Role = "Admin",
                             UserCode = "U0001",
                             UserName = "admin"

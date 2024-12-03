@@ -62,5 +62,74 @@ namespace OnlineBookShop.Service.Impl
             await _repository.SaveSubCategory(obj);
             return new ResponseMessage { StatusCode = 200, Message = "successfully added." };
         }
+
+        public async Task<ResponseMessage> GetAllCategory()
+        {
+            try
+            {
+                var categories = await _repository.FindAllCategory();
+
+                // Map Category entities to CategoryResponseDTO
+                var categoryList = categories.Select(category => new CategoryResponseDTO
+                {
+                    Id = category.Id.ToString(),
+                    CategoryCode = category.CategoryCode,
+                    CategoryName = category.CategoryName,
+                    CreateDate = category.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    UpdateDate = category.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsActive = category.IsActive
+                }).ToList();
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "success",
+                    Data = categoryList // Include the DTO list in the response
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    StatusCode = 400,
+                    Message = $"Error: {ex.Message}"
+                };
+            }
+
+        }
+
+        public async Task<ResponseMessage> GetAllSubCategory()
+        {
+            try
+            {
+                var categories = await _repository.FindAllSubCategory();
+
+                // Map Category entities to CategoryResponseDTO
+                var categoryList = categories.Select(category => new CategoryResponseDTO
+                {
+                    Id = category.Id.ToString(),
+                    CategoryCode = category.SubCategoryCode,
+                    CategoryName = category.SubCategoryName,
+                    CreateDate = category.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    UpdateDate = category.UpdateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    IsActive = category.IsActive
+                }).ToList();
+
+                return new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Message = "success",
+                    Data = categoryList // Include the DTO list in the response
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    StatusCode = 400,
+                    Message = $"Error: {ex.Message}"
+                };
+            }
+        }
     }
 }

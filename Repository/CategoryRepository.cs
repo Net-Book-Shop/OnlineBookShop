@@ -33,6 +33,17 @@ namespace OnlineBookShop.Repository
             return await _dbContext.SubCategory.FirstOrDefaultAsync(x => x.SubCategoryCode == code);
 
         }
+        public async Task<List<SubCategory>> FindAllSubCategory()
+        {
+            return await _dbContext.SubCategory.ToListAsync();
+
+        } 
+        public async Task<List<Category>> FindAllCategory()
+        {
+            return await _dbContext.Category.ToListAsync();
+
+        }
+
 
     }
 }

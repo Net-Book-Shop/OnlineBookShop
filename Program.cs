@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using OnlineBookShop.Model;
 using ProductMiniApi.Repository.Implementation;
 using Microsoft.Extensions.FileProviders;
+using OnlineBookShop.Other;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,12 +98,14 @@ builder.Services.AddAuthentication(options =>
 //service add
 builder.Services.AddScoped<PasswordHasher<User>>();
 builder.Services.AddAuthentication();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPrivilageService, PrivilageService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<ICustomerService,CustomerService>();
 //repository
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<PrivilegeRepository>();
@@ -111,6 +114,7 @@ builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<PrivilegeDetailsRepository>();
 builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<CustomerRepository>();
 
 
 var app = builder.Build();

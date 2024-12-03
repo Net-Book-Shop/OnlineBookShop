@@ -7,5 +7,7 @@ namespace OnlineBookShop.Service
     {
         Task<ResponseMessage> AddCategory(CategoryRequestDTO requestDTO);
         Task<ResponseMessage> AddSubCategory(CategoryRequestDTO requestDTO);
+        Task<ResponseMessage> GetAllCategory();
+        Task<ResponseMessage> GetAllSubCategory();
     }
 }

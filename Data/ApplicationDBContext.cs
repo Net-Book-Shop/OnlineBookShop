@@ -1,8 +1,10 @@
 ﻿using ConstrunctionApp.Model;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineBookShop.Model;
+using System.Collections.Generic;
 
 namespace OnlineBookShop.Data
 {
@@ -24,22 +26,23 @@ namespace OnlineBookShop.Data
         public DbSet<OrderDetails> OrderDetails { get; set; }
         public DbSet<Reviews> Reviews { get; set; }
 
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            _= modelBuilder.Entity<User>().HasData([
-                new User{
-                    Id = Guid.NewGuid(),
-                    UserName ="admin",
-                    UserCode="U0001",
-                    Email="admin@gmail.com",
-                    Password = "admin@1234",
-                    Role ="Admin"
-                }
-                ]);
+            var passwordHasher = new PasswordHasher<User>();
+
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                UserName = "admin",
+                UserCode = "U0001",
+                Email = "admin@gmail.com",
+                Password = passwordHasher.HashPassword(null, "admin@1234"),
+                Role = "Admin"
+            };
+
+            modelBuilder.Entity<User>().HasData(adminUser);
         }
 
     }

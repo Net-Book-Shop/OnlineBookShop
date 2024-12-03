@@ -31,5 +31,13 @@ namespace OnlineBookShop.Controllers
             var result = await _userService.GetRoleWiseUserlist(requestDTO);
             return result;
         }
+
+        [Authorize]
+        [HttpPost("UpdateUser")]
+        public async Task<ActionResult<ResponseMessage>> UpdateUser(UserRegistorRequestDTO requestDTO)
+        {
+            var result = await _userService.UpdateUser(requestDTO);
+            return result;
+        }
     }
 }

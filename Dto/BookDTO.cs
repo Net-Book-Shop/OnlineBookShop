@@ -24,5 +24,6 @@ namespace OnlineBookShop.Dto
 
         [NotMapped]
         public IFormFile? ImageFile { get; set; }
+        public List<ReviewRequestDTO>? reviews { get; set; }
     }
 }
