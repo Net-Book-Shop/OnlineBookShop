@@ -12,6 +12,7 @@
         public string? PaymentMethod { get; set; }
         public string? BankTransactionId { get; set; }
         public string? Status { get; set; }
+        public string? CreateUser { get; set; }
         public string? CreateDate { get; set; }
         public double? Discount { get; set; }
         public double? OrderAmount { get; set; }
