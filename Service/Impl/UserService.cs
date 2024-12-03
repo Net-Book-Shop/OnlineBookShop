@@ -61,9 +61,18 @@ namespace OnlineBookShop.Service.Impl
                 {
                     throw new Exception("Cant find a user!");
                 }
-                existingUser.UserName = requestDTO.UserName;
-                existingUser.Password = _passwordHasher.HashPassword(existingUser, requestDTO.Password);
-                existingUser.Email = requestDTO.Email;
+                if (!string.IsNullOrEmpty(existingUser.UserName))
+                {
+                    existingUser.UserName = requestDTO.UserName;
+
+                }else if (!string.IsNullOrEmpty(requestDTO.Password))
+                {
+                    existingUser.Password = _passwordHasher.HashPassword(existingUser, requestDTO.Password);
+                }else if (!string.IsNullOrEmpty(requestDTO.Email))
+                {
+                    existingUser.Email = requestDTO.Email;
+                }
+               
 
                 return new ResponseMessage
                 {
